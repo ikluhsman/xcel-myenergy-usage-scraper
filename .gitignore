@@ -1,0 +1,4 @@
+.env
+xcel_data/
+.venv/
+__pycache__/
