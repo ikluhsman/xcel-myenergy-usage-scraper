@@ -749,6 +749,106 @@
         { "id": "sortBy", "options": { "fields": [{ "desc": false, "displayName": "date" }] } }
       ],
       "type": "barchart"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 55 },
+      "id": 20,
+      "title": "Bills",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "blue", "mode": "fixed" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 56 },
+      "id": 21,
+      "options": {
+        "barAlignment": 0, "barRadius": 0, "barWidth": 0.97,
+        "fillOpacity": 80, "fullHighlight": false, "gradientMode": "none", "groupWidth": 0.7,
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "orientation": "auto", "showValue": "never",
+        "stacking": { "group": "A", "mode": "none" },
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" },
+        "xField": "date", "xTickLabelRotation": -45, "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "xcel_bill_electric_dollars",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Electric Bill — Per Billing Cycle",
+      "transformations": [
+        { "id": "filterFieldsByName", "options": { "include": { "names": ["date", "Value"] } } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": false, "displayName": "date" }] } }
+      ],
+      "type": "barchart"
+    },
+
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "fixedColor": "orange", "mode": "fixed" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 56 },
+      "id": 22,
+      "options": {
+        "barAlignment": 0, "barRadius": 0, "barWidth": 0.97,
+        "fillOpacity": 80, "fullHighlight": false, "gradientMode": "none", "groupWidth": 0.7,
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": false },
+        "orientation": "auto", "showValue": "never",
+        "stacking": { "group": "A", "mode": "none" },
+        "tooltip": { "hideZeros": false, "mode": "single", "sort": "none" },
+        "xField": "date", "xTickLabelRotation": -45, "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "xcel_bill_gas_dollars",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Gas Bill — Per Billing Cycle",
+      "transformations": [
+        { "id": "filterFieldsByName", "options": { "include": { "names": ["date", "Value"] } } },
+        { "id": "sortBy", "options": { "fields": [{ "desc": false, "displayName": "date" }] } }
+      ],
+      "type": "barchart"
     }
 
   ],
@@ -775,6 +875,6 @@
   "timezone": "browser",
   "title": "Xcel Energy Usage",
   "uid": "xcel-energy-usage",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
