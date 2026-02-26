@@ -866,15 +866,9 @@
           "color": { "mode": "palette-classic" },
           "custom": {
             "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
-            "axisLabel": "", "axisPlacement": "auto",
-            "barAlignment": 0, "barMaxWidth": 8,
-            "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "none",
+            "axisLabel": "", "axisPlacement": "auto", "fillOpacity": 80, "gradientMode": "none",
             "hideFrom": { "legend": false, "tooltip": false, "viz": false },
-            "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1,
-            "pointSize": 5, "scaleDistribution": { "type": "linear" },
-            "showPoints": "never", "spanNulls": false,
-            "stacking": { "group": "A", "mode": "none" },
-            "thresholdsStyle": { "mode": "off" }
+            "lineWidth": 1, "scaleDistribution": { "type": "linear" }, "thresholdsStyle": { "mode": "off" }
           },
           "mappings": [],
           "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
@@ -882,11 +876,11 @@
         },
         "overrides": [
           {
-            "matcher": { "id": "byName", "options": "off-peak" },
+            "matcher": { "id": "byName", "options": "Off-Peak" },
             "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
           },
           {
-            "matcher": { "id": "byName", "options": "on-peak" },
+            "matcher": { "id": "byName", "options": "On-Peak" },
             "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
           }
         ]
@@ -894,20 +888,51 @@
       "gridPos": { "h": 10, "w": 24, "x": 0, "y": 66 },
       "id": 24,
       "options": {
+        "barAlignment": 0, "barRadius": 0, "barWidth": 0.97,
+        "fillOpacity": 80, "fullHighlight": false, "gradientMode": "none", "groupWidth": 0.7,
         "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
-        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "none" }
+        "orientation": "auto", "showValue": "never",
+        "stacking": { "group": "A", "mode": "normal" },
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "none" },
+        "xField": "datetime", "xTickLabelRotation": -45, "xTickLabelSpacing": 0
       },
       "pluginVersion": "12.3.1",
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "xcel_energy_ondemand_kwh",
-          "legendFormat": "{{rate_level}}",
+          "expr": "xcel_energy_ondemand_kwh{rate_level=\"off-peak\"}",
+          "format": "table",
+          "instant": true,
           "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "xcel_energy_ondemand_kwh{rate_level=\"on-peak\"}",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
         }
       ],
-      "title": "On-Demand Interval Usage — 15-min kWh",
-      "type": "timeseries"
+      "title": "On-Demand Interval Usage — 15-min kWh (Today)",
+      "transformations": [
+        {
+          "id": "joinByField",
+          "options": { "byField": "datetime", "mode": "outer" }
+        },
+        {
+          "id": "filterFieldsByName",
+          "options": { "include": { "names": ["datetime", "Value #A", "Value #B"] } }
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {},
+            "renameByName": { "Value #A": "Off-Peak", "Value #B": "On-Peak" }
+          }
+        },
+        { "id": "sortBy", "options": { "fields": [{ "desc": false, "displayName": "datetime" }] } }
+      ],
+      "type": "barchart"
     }
 
   ],
@@ -934,6 +959,6 @@
   "timezone": "browser",
   "title": "Xcel Energy Usage",
   "uid": "xcel-energy-usage",
-  "version": 6,
+  "version": 7,
   "weekStart": ""
 }

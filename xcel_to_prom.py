@@ -223,7 +223,9 @@ def generate_prom(
         lines.append("")
 
     # ── On-demand 15-min intervals (optional) ────────────────────────────────
-    # Uses explicit millisecond timestamps so Grafana can display as time series.
+    # node_exporter textfile collector rejects the whole file if any metric has
+    # an explicit timestamp, so datetime is stored as a label instead.
+    # Grafana displays these as a bar chart with xField="datetime".
     if ondemand_csv:
         lines += [
             "# HELP xcel_energy_ondemand_kwh"
@@ -233,8 +235,9 @@ def generate_prom(
         with ondemand_csv.open(encoding="utf-8") as f:
             for row in csv.DictReader(f):
                 lines.append(
-                    f'xcel_energy_ondemand_kwh{{rate_level="{row["rate_level"]}"}} '
-                    f'{row["kWh"]} {row["unix_ms"]}'
+                    f'xcel_energy_ondemand_kwh{{'
+                    f'datetime="{row["DateTime"]}",rate_level="{row["rate_level"]}"'
+                    f'}} {row["kWh"]}'
                 )
         lines.append("")
 
