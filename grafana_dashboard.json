@@ -849,6 +849,65 @@
         { "id": "sortBy", "options": { "fields": [{ "desc": false, "displayName": "date" }] } }
       ],
       "type": "barchart"
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 65 },
+      "id": 23,
+      "title": "On-Demand Interval (Today)",
+      "type": "row"
+    },
+
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": {
+            "axisBorderShow": false, "axisCenteredZero": false, "axisColorMode": "text",
+            "axisLabel": "", "axisPlacement": "auto",
+            "barAlignment": 0, "barMaxWidth": 8,
+            "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "none",
+            "hideFrom": { "legend": false, "tooltip": false, "viz": false },
+            "insertNulls": false, "lineInterpolation": "linear", "lineWidth": 1,
+            "pointSize": 5, "scaleDistribution": { "type": "linear" },
+            "showPoints": "never", "spanNulls": false,
+            "stacking": { "group": "A", "mode": "none" },
+            "thresholdsStyle": { "mode": "off" }
+          },
+          "mappings": [],
+          "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": 0 }] },
+          "unit": "kwh"
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "off-peak" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "blue", "mode": "fixed" } }]
+          },
+          {
+            "matcher": { "id": "byName", "options": "on-peak" },
+            "properties": [{ "id": "color", "value": { "fixedColor": "orange", "mode": "fixed" } }]
+          }
+        ]
+      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 66 },
+      "id": 24,
+      "options": {
+        "legend": { "calcs": [], "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "hideZeros": false, "mode": "multi", "sort": "none" }
+      },
+      "pluginVersion": "12.3.1",
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "xcel_energy_ondemand_kwh",
+          "legendFormat": "{{rate_level}}",
+          "refId": "A"
+        }
+      ],
+      "title": "On-Demand Interval Usage — 15-min kWh",
+      "type": "timeseries"
     }
 
   ],
@@ -870,11 +929,11 @@
       }
     ]
   },
-  "time": { "from": "now-5m", "to": "now" },
+  "time": { "from": "now-24h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "Xcel Energy Usage",
   "uid": "xcel-energy-usage",
-  "version": 5,
+  "version": 6,
   "weekStart": ""
 }

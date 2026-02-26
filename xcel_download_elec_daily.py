@@ -2,20 +2,18 @@
 """
 Xcel Energy Electric Daily Usage Downloader — Playwright edition
 ----------------------------------------------------------------
-Downloads three files per run:
+Downloads two files per run:
   1. Chart "By Day" kWh CSV  — current billing period, daily On Peak / Off Peak kWh
   2. Chart "By Day" cost CSV — current billing period, daily On Peak / Off Peak $
-  3. Interval CSV            — daily kWh, 2-year history from cassandra endpoint
 
 Auth flow summary:
   1. Log in via Gigya ScreenSets on my.xcelenergy.com
   2. Navigate to the IDP-initiated SSO URL — Salesforce generates a SAMLResponse
      server-side and posts it to myenergy's ACS, establishing the SimpleSAML
-     session (PHPSESSID + SimpleSAMLSessionID) required by the cassandra API.
+     session (PHPSESSID + SimpleSAMLSessionID).
   3. Navigate to usage-history, switch to By Day to intercept the ajax URL
      (captures custId and fuelType dynamically).
   4. Fetch By Day kWh and cost JSON via requests library with browser cookies.
-  5. Download the 2-year interval CSV from cassandra via page.expect_download().
 
 Setup:
   pip install playwright python-dotenv requests
@@ -36,7 +34,7 @@ from __future__ import annotations
 import csv
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
@@ -51,7 +49,6 @@ load_dotenv()
 
 EMAIL    = os.getenv("XCEL_USERNAME")
 PASSWORD = os.getenv("XCEL_PASSWORD")
-METER_ID = os.getenv("METER_ID")
 
 # Where to save files
 OUTPUT_DIR = Path("./xcel_data")
@@ -77,17 +74,6 @@ MYENERGY_BASE     = "https://myenergy.xcelenergy.com"
 USAGE_HISTORY_URL = f"{MYENERGY_BASE}/myenergy/usage-history"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-
-def build_interval_csv_url(start: datetime, end: datetime) -> str:
-    return (
-        f"{MYENERGY_BASE}/cassandra/getfile/period/custom"
-        f"/start_date/{start.strftime('%m-%d-%Y')}"
-        f"/to_date/{end.strftime('%m-%d-%Y')}"
-        f"/format/csv/fuel_type/E"
-        f"/backup_meter_id_owh/{METER_ID}"
-        f"/from_usage/1/interval_length/DAILY"
-    )
-
 
 def swap_usage_type(url: str, usage_type: str) -> str:
     """Return url with usageType query param replaced by usage_type."""
@@ -119,10 +105,7 @@ def main() -> None:
     if not EMAIL or not PASSWORD:
         sys.exit("ERROR: Set XCEL_USERNAME and XCEL_PASSWORD in your .env file.")
 
-    today          = datetime.today()
-    interval_start = today - timedelta(days=365 * 2)
-    interval_url   = build_interval_csv_url(interval_start, today)
-    interval_file  = OUTPUT_DIR / f"xcel_usage_{today.strftime('%Y-%m-%d')}.csv"
+    today = datetime.today()
 
     # Will hold the first DAILY kWh ajax URL fired by the usage-history page
     captured: dict[str, str | None] = {"ajax_url": None}
@@ -256,28 +239,10 @@ def main() -> None:
         rows = json_to_csv(r.json(), cost_file)
         print(f"  Saved {cost_file.name} ({rows} days)")
 
-        # ── Step 7: Download 2-year interval CSV via cassandra ────────────────
-        print(
-            f"Step 7: Downloading 2-year interval CSV "
-            f"({interval_start.strftime('%m-%d-%Y')} → {today.strftime('%m-%d-%Y')})..."
-        )
-        # The cassandra endpoint returns text/csv with Content-Disposition:
-        # attachment, so Chromium treats it as a browser download.
-        with page.expect_download(timeout=60_000) as dl_info:
-            try:
-                page.goto(interval_url, timeout=10_000)
-            except Exception:
-                pass  # "Download is starting" exception is expected here
-
-        download = dl_info.value
-        download.save_as(str(interval_file))
-        size_kb = interval_file.stat().st_size / 1024
-        print(f"  Saved {interval_file.name} ({size_kb:.1f} KB)")
-
         browser.close()
 
-    # ── Step 8: Write Prometheus textfile ─────────────────────────────────────
-    print("Step 8: Writing Prometheus textfile...")
+    # ── Step 7: Write Prometheus textfile ─────────────────────────────────────
+    print("Step 7: Writing Prometheus textfile...")
     prom_out = generate_prom(data_dir=OUTPUT_DIR, prom_dir=PROM_DIR)
     text     = prom_out.read_text(encoding="utf-8")
     samples  = sum(1 for ln in text.splitlines() if ln and not ln.startswith("#"))
