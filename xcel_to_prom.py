@@ -56,6 +56,17 @@ def _latest(pattern: str, directory: Path) -> Path | None:
     return matches[0] if matches else None
 
 
+def _cleanup(pattern: str, directory: Path, keep: int) -> None:
+    """Delete all but the `keep` most recently modified files matching pattern."""
+    matches = sorted(
+        directory.glob(pattern),
+        key=lambda p: p.stat().st_mtime,
+        reverse=True,
+    )
+    for old in matches[keep:]:
+        old.unlink()
+
+
 def generate_prom(
     data_dir: Path = DATA_DIR,
     prom_dir: Path = PROM_DIR,
@@ -253,6 +264,17 @@ def generate_prom(
     prom_dir.mkdir(parents=True, exist_ok=True)
     out = prom_dir / "xcel_energy.prom"
     out.write_text("\n".join(lines), encoding="utf-8")
+
+    # ── Cleanup old CSVs ──────────────────────────────────────────────────────
+    _cleanup("byday_kwh_*.csv",          data_dir, keep=3)
+    _cleanup("byday_cost_*.csv",         data_dir, keep=3)
+    _cleanup("bymonth_elec_kwh_*.csv",   data_dir, keep=3)
+    _cleanup("bymonth_elec_cost_*.csv",  data_dir, keep=3)
+    _cleanup("bymonth_gas_usage_*.csv",  data_dir, keep=3)
+    _cleanup("bymonth_gas_cost_*.csv",   data_dir, keep=3)
+    _cleanup("bill_summary_*.csv",       data_dir, keep=3)
+    _cleanup("ondemand_*.csv",           data_dir, keep=7)
+
     return out
 
 
